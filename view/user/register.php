@@ -212,7 +212,7 @@
                     if (data.status != 1) {
                         dialog(data)
                     } else {
-                        window.location.href = '/index.php?c=home&a=index;
+                        window.location.href = '/index.php?c=home&a=index';
                     }
                 },
             });
