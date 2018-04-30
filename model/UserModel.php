@@ -8,6 +8,21 @@
  */
 class UserModel
 {
+    /** 检验是否登入 */
+    public static function isLogin()
+    {
+        session_start();
+        $pdo = new \MysqlModel;
+        $mysql = $pdo->database();
+        $session = isset($_SESSION['token']) ? $_SESSION['token'] : '';
+        $user = $mysql->where(['token' => "'{$session}'"])->field('id')->one('user');
+        if (!empty($user)) {
+            return $user['id'];
+        } else {
+            header("Location: index.php?c=user&a=register");
+        }
+    }
+
     /** 创建新用户 */
     public function create($param)
     {

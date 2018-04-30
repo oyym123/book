@@ -15,7 +15,7 @@ class userController
     {
         // \HelperModel::writeLog($_POST);
         if (!isset($_POST['phone_number'])) {
-            header("Location: /login/view/user/register.php");
+            header("Location: /view/user/register.php");
         }
         $userModel = new \UserModel();
         if ($userModel->rule('register') === true) {
@@ -34,13 +34,24 @@ class userController
     {
 
         if (!isset($_POST['phone_number'])) {
-            header("Location: /login/view/user/register.php");
+            header("Location: /view/user/register.php");
         }
         $userModel = new \UserModel();
         if ($userModel->rule('login') === true) {
-            echo 1;
+            session_start();
+            // 保存一天
+            $lifeTime = 24 * 3600;
+            setcookie(session_name(), session_id(), time() + $lifeTime, "/");
+            $_SESSION['phone_number'] = $_POST['phone_number'];
+            $sessionId = session_id();
+            $_SESSION['token'] = $sessionId;
+            $pdo = new \MysqlModel;
+            $mysql = $pdo->database();
+            $mysql->where(['phone_number' => $_POST['phone_number']])->update('user', ['token' => $_SESSION['token']]);
+            echo json_encode(['status' => 1, 'token' => $_SESSION['token']]);
         } else {
             echo $userModel->rule('login');
         }
     }
+
 }

@@ -11,13 +11,14 @@ class HomeController
 {
     public function index()
     {
+        $userId = \UserModel::isLogin();
         $pdo = new \MysqlModel;
         $mysql = $pdo->database();
-        $article = $mysql->select('article');
-        $chapter = $mysql->where(['article_id' => $article[0]['id']])->select('chapter');
+        $article = $mysql->where(['status' => 1])->select('article');
         $param = [
-            'favorite' => $article
+            'favorite' => $article,
+            'recently' => $recode = $mysql->where(['user_id' => "{$userId}"])->order(['created_at' => 'desc'])->all('reading_record')
         ];
-        \FuncController::render('index', $param);
+        \FuncController::render('index', ['param' => json_encode($param)]);
     }
 }

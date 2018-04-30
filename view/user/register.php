@@ -1,4 +1,17 @@
-<link rel="stylesheet" href="../../public/css/weui.css"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>菲菲读书</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Accordion with CSS3"/>
+    <meta name="keywords" content="accordion, css3, sibling selector, radio buttons, input, pseudo class"/>
+    <meta name="author" content="Codrops"/>
+    <link rel="stylesheet" href="/public/css/weui.css"/>
+</head>
+<body>
 <div class="weui-mask" id="mask" style="display: none;"></div>
 <div class="page">
     <div id="dialogs">
@@ -125,7 +138,8 @@
         </div>
     </form>
 </div>
-
+</body>
+</html>
 
 <script src="../../public/js/zepto.min.js"></script>
 <script src="https://cdn.bootcss.com/jquery/3.2.1/jquery.min.js"></script>
@@ -177,32 +191,31 @@
                     }
                 },
             });
+        });
+
+
+        $('#login_button').on('click', function () {
+            if ($("#mobile2").val() == "" || isNaN($("#mobile2").val()) || $("#mobile2").val().length != 11) {
+                dialog(data = '请填写正确手机号');
+                return false;
+            }
+
+            $.post({
+                type: "post",
+                url: "../../index.php?c=user&a=login",
+                data: {
+                    phone_number: $("#mobile2").val(), password: $("#password2").val()
+                },
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    if (data.status != 1) {
+                        dialog(data)
+                    } else {
+                        window.location.href = '/index.php?c=home&a=index;
+                    }
+                },
             });
-
-
-            $('#login_button').on('click', function () {
-                if ($("#mobile2").val() == "" || isNaN($("#mobile2").val()) || $("#mobile2").val().length != 11) {
-                    dialog(data = '请填写正确手机号');
-                    return false;
-                }
-
-                $.post({
-                    type: "post",
-                    url: "../../index.php?c=user&a=login",
-                    data: {
-                        phone_number: $("#mobile2").val(), password: $("#password2").val()
-                    },
-                    dataType: "text",
-                    async: false,
-                    success: function (data) {
-                        //console.log(data);
-                        if (data != 1) {
-                            dialog(data)
-                        } else {
-                            window.location.href = './index.php';
-                        }
-                    },
-                });
 
 
         });

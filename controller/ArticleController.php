@@ -22,33 +22,57 @@ class ArticleController
         $pdo = new \MysqlModel;
         $mysql = $pdo->database();
         $id = isset($_GET['id']) ? $_GET['id'] : 0;
-        $limit = isset($_GET['limit']) ? $_GET['limit'] : 0;
-        $chapter = $mysql->where(['article_id' => $id])->order('chapter_id')->limit($limit + 1  , 5)->select('chapter');
-        foreach ($chapter as $item) {
-            $item['content'] = htmlspecialchars($item['content']);
+        $limit = isset($_GET['limit']) ? ($_GET['limit'] ?: 1) : 0;
+        $user_id = \UserModel::isLogin();
+        $article = $mysql->where(['id' => $id])->one('article');
+        $chapter = $mysql->where(['article_id' => $id])->order('chapter_id')->limit($limit, 5)->all('chapter');
+        $record = [
+            'user_id' => $user_id,
+            'article_id' => $id,
+            'title' => $article['title'],
+            'author' => $article['author'],
+            'chapter_id' => ($limit ?: 1) * 5,
+            'created_at' => time(),
+            'updated_at' => time()
+        ];
+        $recordRes = $mysql->where(['article_id' => $id])->one('reading_record');
+        if ($recordRes) {
+            $mysql->where(['id' => $recordRes['id']])->update('reading_record', $record);
+        } else {
+            $mysql->insert('reading_record', $record);
         }
-        \FuncController::render('index', $chapter);
+        \FuncController::render('index', ['limit' => $limit, 'chapter' => json_encode($chapter), 'title' => $article['title']]);
     }
 
-    /** 获取所有的章节 */
-    public function get1()
-    {
-        // 获取链接的HTML代码
-        $html = file_get_contents('https://www.biquge5200.com/11_11782/');
-        $dom = new \DOMDocument();
-        @$dom->loadHTML($html);
 
-        $xpath = new \DOMXPath($dom);
-        $hrefs = $xpath->evaluate('/html/body//a');
-        //for ($i = 0; $i < 3; $i++) {
-        for ($i = 0; $i < $hrefs->length; $i++) {
-            $href = $hrefs->item($i);
-            $url = $href->getAttribute('href');
-            // 保留以http开头的链接
-            if (substr($url, 0, 4) == 'http')
-                // echo $url . '<br/>';
-                $this->check($url);
+    public function search()
+    {
+        $search = isset($_GET['search']) ? $_GET['search'] : '';
+        $url = 'https://www.biquge5200.com/modules/article/search.php?searchkey=' . $search;
+        $output = self::getInfo($url);
+        preg_match_all("/<td class=\"odd\"><a href=\"(.*)(?)\">(.*)(?)<\/a><\/td>/", $output, $name);
+        preg_match_all("/<\/td>
+    <td class=\"odd\">(.*)(?)<\/td>/", $output, $author);
+        foreach ($name[2] as $key => $item) {
+            $param[] = [
+                'name' => $item,
+                'url' => $name[1][$key],
+                'author' => $author[0][$key]
+            ];
         }
+        \FuncController::render('search', ['param' => json_encode($param)]);
+    }
+
+
+    //站内搜索
+    public function siteSearch()
+    {
+        $search = isset($_GET['search']) ? $_GET['search'] : '';
+        $pdo = new \MysqlModel;
+        $mysql = $pdo->database();
+        // $article = $mysql->where(['title' => "'$search'"])->select('article');
+        $article = $mysql->doSql('SELECT * FROM article WHERE title LIKE ' . "'%$search%'");
+        \FuncController::render('site-search', ['param' => json_encode($article)]);
     }
 
 
@@ -56,30 +80,111 @@ class ArticleController
     public function get()
     {
         // 获取链接的HTML代码
-        $html = file_get_contents('https://www.biquge5200.com/83_83599/');
+        set_time_limit(0);
+        ignore_user_abort(true);
+        header("Location: index.php?c=home&a=index");
+        $url = isset($_GET['url']) ? $_GET['url'] : '';
+        $title = isset($_GET['title']) ? $_GET['title'] : '';
+        $author = isset($_GET['author']) ? str_replace(' ', '', $_GET['author']) : '';
+        $html = file_get_contents($url);
         $pdo = new \MysqlModel;
         $mysql = $pdo->database();
+
         $dom = new \DOMDocument();
         @$dom->loadHTML($html);
         $xpath = new \DOMXPath($dom);
         $hrefs = $xpath->evaluate('/html/body//a');
-        //for ($i = 0; $i < 3; $i++) {
+
         for ($i = 0; $i < $hrefs->length; $i++) {
             $href = $hrefs->item($i);
-            $url = $href->getAttribute('href');
+            $url1 = $href->getAttribute('href');
             // 保留以http开头的链接
-            if (substr($url, 0, 4) == 'http')
-                $article = $mysql->where(['url' => $url])->select('chapter');
-            if (empty($article)) {
-                $this->check($url);
+            if (substr($url1, 0, 4) == 'http') {
+                $urls[] = $url1;
+            }
+        }
+        $urls = array_unique($urls);
+        $articles = [
+            'chapter_count' => count($urls),
+            'url' => $url,
+            'title' => $title,
+            'author' => $author,
+            'type' => 1,
+            'content' => '',
+            'created_at' => time(),
+            'updated_at' => time(),
+        ];
+
+        $article = $mysql->where(['url' => "'$url'"])->field(['title', 'id'])->limit(1)->select('article');
+
+        if (empty($article)) {
+            $articles = $mysql->insert('article', $articles);
+            $article_id = $articles[0]['@@identity'];
+        } else {
+            $mysql->where(['id' => $article[0]['id']])->update('article', $articles);
+            $article_id = $article[0]['id'];
+        }
+
+        foreach ($urls as $l) {
+            $article1 = $mysql->where(['url' => "'$l'"])->field(['id'])->select('chapter');
+            if (empty($article1)) {
+                $this->check($l, $article_id, $title);
             }
         }
     }
 
-    public function check($url)
+    public function check($url, $article_id, $articleTitle)
     {
         set_time_limit(0);
-        sleep(5);
+        ignore_user_abort(true);
+        header("Location: index.php?c=home&a=index");
+        $output = self::getInfo($url);
+        $regex1 = "/<div id=\"content\".*?>.*?<\/div>/ism";
+        preg_match("/(第)(.*)(?)(章)/", $output, $chapter);
+
+        if (empty($chapter)) {
+            preg_match("/<title>(.*)(?)(章)/", $output, $chapter);
+            $chapter = $chapter[1];
+        } else {
+            $chapter = $chapter[2];
+        }
+        preg_match("/<title>(.*?)<\/title>/", $output, $title);
+        if (preg_match($regex1, $output, $matches)) {
+            $title = str_replace(" ", "||", $title[1]);
+            $content = str_replace('<br/>', '|**|', $matches[0]);
+            $content = str_replace("\r\n", '', $content);
+            $content = str_replace("        ", "", $content);
+            $title = str_replace("_笔趣阁", "", $title);
+            $title = str_replace('_' . $articleTitle, "", $title);
+            $content = str_replace("想看好看的小说，请使用微信关注公众号“得牛看书”。", "", $content);
+            if (!is_numeric($chapter)) {
+                $s = new \ChineseNumberConvModel();
+                $chapter_id = $s->toAlpha($chapter);
+            } else {
+                $chapter_id = intval($chapter);
+            }
+            $pdo = new \MysqlModel;
+            $mysql = $pdo->database();
+            $param = [
+                'article_id' => $article_id,
+                'chapter_id' => $chapter_id,
+                'url' => $url,
+                'name' => $title,
+                'content' => base64_encode(strip_tags($content)),
+                'created_at' => time(),
+                'updated_at' => time(),
+            ];
+            $mysql->insert('chapter', $param);
+        } else {
+            echo '0';
+        }
+
+
+    }
+
+
+    public static function getInfo($url)
+    {
         //初始化
         $curlobj = curl_init();
         //设置访问的url
@@ -93,48 +198,7 @@ class ArticleController
 
         $output = curl_exec($curlobj);  //执行获取内容
         curl_close($curlobj);          //关闭curl
-
-        //取得指定位址的內容，并储存至 $text
-        //  $text=file_get_contents('http://www.jb51.net/');
-        //去除换行及空白字符（序列化內容才需使用）
-        //$text=str_replace(array("/r","/n","/t","/s"), '', $text);
-
-        $output = iconv('GBK', 'UTF-8', $output);
-        $regex1 = "/<div id=\"content\".*?>.*?<\/div>/ism";
-        preg_match("/(第)(.*)(?)(章)/", $output, $chapter);
-        preg_match("/<title>(.*?)<\/title>/", $output, $title);
-        if (preg_match($regex1, $output, $matches)) {
-            $title = str_replace(" ", "||", $title[1]);
-            $content = str_replace('<br/>', '|**|', $matches[0]);
-            $content = str_replace("\r\n", '', $content);
-            $content = str_replace("        ", "", $content);
-            $title = str_replace("_笔趣阁", "", $title);
-            $content = str_replace("想看好看的小说，请使用微信关注公众号“得牛看书”。", "", $content);
-
-            if (!is_numeric($chapter[2])) {
-                $s = new \ChineseNumberConvModel();
-                $chapter_id = $s->toAlpha($chapter[2]);
-            } else {
-                $chapter_id = $chapter[2];
-            }
-
-            $pdo = new \MysqlModel;
-            $mysql = $pdo->database();
-            $param = [
-                'article_id' => 1,
-                'chapter_id' => $chapter_id,
-                'url' => $url,
-                'name' => $title,
-                'content' => base64_encode(strip_tags($content)),
-                'created_at' => time(),
-                'updated_at' => time(),
-            ];
-
-            $mysql->insert('chapter', $param);
-        } else {
-            echo '0';
-        }
-
+        return iconv('GBK', 'UTF-8', $output);
     }
 
 }

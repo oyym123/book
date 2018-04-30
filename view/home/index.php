@@ -18,56 +18,22 @@
         });
     </script>
 </head>
-<style>
-    body {
-        background-image: url("/public/image/bgnoise_lg.jpg");
-    }
-</style>
 <body>
 <?php
-if (isset($_POST['param'])) {
-    $data = json_decode($_POST['param'], true);
-    // print_r(json_decode($_POST['param'], true));
-//    exit;
-}
+require('../public/header.php');
 ?>
-<div class="search bar7">
-    <form>
-        <input type="text" placeholder="书名 或 作者名称">
-        <button type="submit"></button>
-    </form>
-</div>
-
-<div class="search bar8">
-    <form>
-        <input type="text" placeholder="输入第几章，自动跳转">
-        <button type="submit"></button>
-    </form>
-</div>
 <section>
-    <h2>　</h2>
     <div id="menu">
         <ul>
             <li>
-                <a href="article.php">打开上次阅读</a>
+                <a href="/index.php?c=readingRecord&a=lastViewed">打开上次阅读</a>
             </li>
             <li>
                 <a href="#">最近浏览</a>
                 <ul>
-                    <li>
-                        <a href="#">富贵不能吟</a>
-                        <ul>
-                            <li style="background-color: #1ABC9C">
-                                <a href="/index.php?c=article&a=chapter&id=1">您已阅读到第 68 章 ‧★,:*:‧\(￣▽￣)/‧:*‧°★*　</a>
-                            </li>
-                            <li>
-                                <a href="article.php">1-5 章</a>
-                            </li>
-                            <li>
-                                <a href="article.php">6-10 章</a>
-                            </li>
-                        </ul>
-                    </li>
+                    <?php foreach ($data['recently'] as $item) { ?>
+                        <a href="/index.php?c=readingRecord&a=lastViewed&id=<?= $item['id'] ?>"><?= $item['title'] . '  /  第 ' . $item['chapter_id'] . ' 章' ?></a>
+                    <?php } ?>
                 </ul>
             </li>
             <li>

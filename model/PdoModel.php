@@ -29,7 +29,8 @@ class pdoModel
      * 初始化类
      * @param array $conf 数据库配置
      */
-    public function __construct(array $conf) {
+    public function __construct(array $conf)
+    {
         class_exists('PDO') or die("PDO: class not exists.");
         $this->_host = $conf['host'];
         $this->_port = $conf['port'];
@@ -37,7 +38,7 @@ class pdoModel
         $this->_pass = $conf['passwd'];
         $this->_dbName = $conf['dbname'];
         //连接数据库
-        if ( is_null(self::$_dbh) ) {
+        if (is_null(self::$_dbh)) {
             $this->_connect();
         }
     }
@@ -45,9 +46,10 @@ class pdoModel
     /**
      * 连接数据库的方法
      */
-    protected function _connect() {
-        $dsn = $this->_dbType.':host='.$this->_host.';port='.$this->_port.';dbname='.$this->_dbName;
-        $options = $this->_pconnect ? array(PDO::ATTR_PERSISTENT=>true) : array();
+    protected function _connect()
+    {
+        $dsn = $this->_dbType . ':host=' . $this->_host . ';port=' . $this->_port . ';dbname=' . $this->_dbName;
+        $options = $this->_pconnect ? array(PDO::ATTR_PERSISTENT => true) : array();
         try {
             $dbh = new PDO($dsn, $this->_user, $this->_pass, $options);
             $dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);  //设置如果sql语句执行错误则抛出异常，事务会自动回滚
@@ -65,11 +67,12 @@ class pdoModel
      * @param string $value
      * @return string
      */
-    protected function _addChar($value) {
-        if ('*'==$value || false!==strpos($value,'(') || false!==strpos($value,'.') || false!==strpos($value,'`')) {
+    protected function _addChar($value)
+    {
+        if ('*' == $value || false !== strpos($value, '(') || false !== strpos($value, '.') || false !== strpos($value, '`')) {
             //如果包含* 或者 使用了sql方法 则不作处理
-        } elseif (false === strpos($value,'`') ) {
-            $value = '`'.trim($value).'`';
+        } elseif (false === strpos($value, '`')) {
+            $value = '`' . trim($value) . '`';
         }
         return $value;
     }
@@ -79,13 +82,14 @@ class pdoModel
      * @param string $tbName 表名
      * @return array
      */
-    protected function _tbFields($tbName) {
-        $sql = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME="'.$tbName.'" AND TABLE_SCHEMA="'.$this->_dbName.'"';
+    protected function _tbFields($tbName)
+    {
+        $sql = 'SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME="' . $tbName . '" AND TABLE_SCHEMA="' . $this->_dbName . '"';
         $stmt = self::$_dbh->prepare($sql);
         $stmt->execute();
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $ret = array();
-        foreach ($result as $key=>$value) {
+        foreach ($result as $key => $value) {
             $ret[$value['COLUMN_NAME']] = 1;
         }
         return $ret;
@@ -97,13 +101,14 @@ class pdoModel
      * @param array $data POST提交数据
      * @return array $newdata
      */
-    protected function _dataFormat($tbName,$data) {
+    protected function _dataFormat($tbName, $data)
+    {
         if (!is_array($data)) return array();
         $table_column = $this->_tbFields($tbName);
-        $ret=array();
-        foreach ($data as $key=>$val) {
+        $ret = array();
+        foreach ($data as $key => $val) {
             if (!is_scalar($val)) continue; //值不是标量则跳过
-            if (array_key_exists($key,$table_column)) {
+            if (array_key_exists($key, $table_column)) {
                 $key = $this->_addChar($key);
                 if (is_int($val)) {
                     $val = intval($val);
@@ -113,7 +118,7 @@ class pdoModel
                     // 支持在字段的值里面直接使用其它字段 ,例如 (score+1) (name) 必须包含括号
                     $val = $val;
                 } elseif (is_string($val)) {
-                    $val = '"'.addslashes($val).'"';
+                    $val = '"' . addslashes($val) . '"';
                 }
                 $ret[$key] = $val;
             }
@@ -126,7 +131,8 @@ class pdoModel
      * @param string $sql sql指令
      * @return mixed
      */
-    protected function _doQuery($sql='') {
+    protected function _doQuery($sql = '')
+    {
         $this->_sql = $sql;
         $pdostmt = self::$_dbh->prepare($this->_sql); //prepare或者query 返回一个PDOStatement
         $pdostmt->execute();
@@ -139,7 +145,8 @@ class pdoModel
      * @param string $sql sql指令
      * @return integer
      */
-    protected function _doExec($sql='') {
+    protected function _doExec($sql = '')
+    {
         $this->_sql = $sql;
         return self::$_dbh->exec($this->_sql);
     }
@@ -149,12 +156,12 @@ class pdoModel
      * @param string $sql SQL指令
      * @return mixed
      */
-    public function doSql($sql='') {
+    public function doSql($sql = '')
+    {
         $queryIps = 'INSERT|UPDATE|DELETE|REPLACE|CREATE|DROP|LOAD DATA|SELECT .* INTO|COPY|ALTER|GRANT|REVOKE|LOCK|UNLOCK';
         if (preg_match('/^\s*"?(' . $queryIps . ')\s+/i', $sql)) {
             return $this->_doExec($sql);
-        }
-        else {
+        } else {
             //查询操作
             return $this->_doQuery($sql);
         }
@@ -164,7 +171,8 @@ class pdoModel
      * 获取最近一次查询的sql语句
      * @return String 执行的SQL
      */
-    public function getLastSql() {
+    public function getLastSql()
+    {
         return $this->_sql;
     }
 
@@ -174,11 +182,13 @@ class pdoModel
      * @param array $data 字段-值的一维数组
      * @return int 受影响的行数
      */
-    public function insert($tbName,array $data){
-        $data = $this->_dataFormat($tbName,$data);
+    public function insert($tbName, array $data)
+    {
+        $data = $this->_dataFormat($tbName, $data);
         if (!$data) return;
-        $sql = "insert into ".$tbName."(".implode(',',array_keys($data)).") values(".implode(',',array_values($data)).")";
-        return $this->_doExec($sql);
+        $sql = "insert into " . $tbName . "(" . implode(',', array_keys($data)) . ") values(" . implode(',', array_values($data)) . ")";
+        $this->_doExec($sql);
+        return $this->_doQuery('select @@identity  ');
     }
 
     /**
@@ -186,10 +196,11 @@ class pdoModel
      * @param string $tbName 操作的数据表名
      * @return int 受影响的行数
      */
-    public function delete($tbName) {
+    public function delete($tbName)
+    {
         //安全考虑,阻止全表删除
         if (!trim($this->_where)) return false;
-        $sql = "delete from ".$tbName." ".$this->_where;
+        $sql = "delete from " . $tbName . " " . $this->_where;
         $this->_clear = 1;
         $this->_clear();
         return $this->_doExec($sql);
@@ -201,18 +212,20 @@ class pdoModel
      * @param array $data 参数数组
      * @return int 受影响的行数
      */
-    public function update($tbName,array $data) {
+    public function update($tbName, array $data)
+    {
         //安全考虑,阻止全表更新
         if (!trim($this->_where)) return false;
-        $data = $this->_dataFormat($tbName,$data);
+        $data = $this->_dataFormat($tbName, $data);
         if (!$data) return;
         $valArr = '';
-        foreach($data as $k=>$v){
-            $valArr[] = $k.'='.$v;
+        foreach ($data as $k => $v) {
+            $valArr[] = $k . '=' . $v;
         }
         $valStr = implode(',', $valArr);
-        $sql = "update ".trim($tbName)." set ".trim($valStr)." ".trim($this->_where);
-        return $this->_doExec($sql);
+        $sql = "update " . trim($tbName) . " set " . trim($valStr) . " " . trim($this->_where);
+        $this->_doExec($sql);
+        return $this->_doQuery('select @@identity  ');
     }
 
     /**
@@ -220,36 +233,62 @@ class pdoModel
      * @param string $tbName 操作的数据表名
      * @return array 结果集
      */
-    public function select($tbName='') {
-        $sql = "select ".trim($this->_field)." from ".$tbName." ".trim($this->_where)." ".trim($this->_order)." ".trim($this->_limit);
+    public function select($tbName = '')
+    {
+        $sql = "select " . trim($this->_field) . " from " . $tbName . " " . trim($this->_where) . " " . trim($this->_order) . " " . trim($this->_limit);
         $this->_clear = 1;
         $this->_clear();
         return $this->_doQuery(trim($sql));
     }
 
     /**
+     * 查询函数
+     * @param string $tbName 操作的数据表名
+     * @return array 结果集
+     */
+    public function all($tbName = '')
+    {
+        $sql = "select " . trim($this->_field) . " from " . $tbName . " " . trim($this->_where) . " " . trim($this->_order) . " " . trim($this->_limit);
+        $this->_clear = 1;
+        $this->_clear();
+        return $this->_doQuery(trim($sql));
+    }
+
+    /**
+     * 查询函数
+     * @param string $tbName 操作的数据表名
+     * @return array 结果集
+     */
+    public function one($tbName = '')
+    {
+        $sql = "select " . trim($this->_field) . " from " . $tbName . " " . trim($this->_where) . " " . trim($this->_order) . " " . trim($this->_limit);
+        $this->_clear = 1;
+        $this->_clear();
+        return $this->_doQuery(trim($sql))[0];
+    }
+
+    /**
      * @param mixed $option 组合条件的二维数组，例：$option['field1'] = array(1,'=>','or')
      * @return $this
      */
-    public function where($option) {
-        if ($this->_clear>0) $this->_clear();
+    public function where($option)
+    {
+        if ($this->_clear > 0) $this->_clear();
         $this->_where = ' where ';
         $logic = 'and';
         if (is_string($option)) {
             $this->_where .= $option;
-        }
-        elseif (is_array($option)) {
-            foreach($option as $k=>$v) {
+        } elseif (is_array($option)) {
+            foreach ($option as $k => $v) {
                 if (is_array($v)) {
                     $relative = isset($v[1]) ? $v[1] : '=';
-                    $logic    = isset($v[2]) ? $v[2] : 'and';
-                    $condition = ' ('.$this->_addChar($k).' '.$relative.' '.$v[0].') ';
-                }
-                else {
+                    $logic = isset($v[2]) ? $v[2] : 'and';
+                    $condition = ' (' . $this->_addChar($k) . ' ' . $relative . ' ' . $v[0] . ') ';
+                } else {
                     $logic = 'and';
-                    $condition = ' ('.$this->_addChar($k).'='.$v.') ';
+                    $condition = ' (' . $this->_addChar($k) . '=' . $v . ') ';
                 }
-                $this->_where .= isset($mark) ? $logic.$condition : $condition;
+                $this->_where .= isset($mark) ? $logic . $condition : $condition;
                 $mark = 1;
             }
         }
@@ -261,16 +300,16 @@ class pdoModel
      * @param mixed $option 排序条件数组 例:array('sort'=>'desc')
      * @return $this
      */
-    public function order($option) {
-        if ($this->_clear>0) $this->_clear();
+    public function order($option)
+    {
+        if ($this->_clear > 0) $this->_clear();
         $this->_order = ' order by ';
         if (is_string($option)) {
             $this->_order .= $option;
-        }
-        elseif (is_array($option)) {
-            foreach($option as $k=>$v){
-                $order = $this->_addChar($k).' '.$v;
-                $this->_order .= isset($mark) ? ','.$order : $order;
+        } elseif (is_array($option)) {
+            foreach ($option as $k => $v) {
+                $order = $this->_addChar($k) . ' ' . $v;
+                $this->_order .= isset($mark) ? ',' . $order : $order;
                 $mark = 1;
             }
         }
@@ -283,14 +322,14 @@ class pdoModel
      * @param int $pageSize 为空则函数设定取出行数，不为空则设定取出行数及页数
      * @return $this
      */
-    public function limit($page,$pageSize=null) {
-        if ($this->_clear>0) $this->_clear();
-        if ($pageSize===null) {
-            $this->_limit = "limit ".$page;
-        }
-        else {
-            $pageval = intval( ($page - 1) * $pageSize);
-            $this->_limit = "limit ".$pageval.",".$pageSize;
+    public function limit($page, $pageSize = null)
+    {
+        if ($this->_clear > 0) $this->_clear();
+        if ($pageSize === null) {
+            $this->_limit = "limit " . $page;
+        } else {
+            $pageval = intval(($page - 1) * $pageSize);
+            $this->_limit = "limit " . $pageval . "," . $pageSize;
         }
         return $this;
     }
@@ -300,12 +339,13 @@ class pdoModel
      * @param mixed $field 字段数组
      * @return $this
      */
-    public function field($field){
-        if ($this->_clear>0) $this->_clear();
+    public function field($field)
+    {
+        if ($this->_clear > 0) $this->_clear();
         if (is_string($field)) {
             $field = explode(',', $field);
         }
-        $nField = array_map(array($this,'_addChar'), $field);
+        $nField = array_map(array($this, '_addChar'), $field);
         $this->_field = implode(',', $nField);
         return $this;
     }
@@ -313,7 +353,8 @@ class pdoModel
     /**
      * 清理标记函数
      */
-    protected function _clear() {
+    protected function _clear()
+    {
         $this->_where = '';
         $this->_order = '';
         $this->_limit = '';
@@ -325,7 +366,8 @@ class pdoModel
      * 手动清理标记
      * @return $this
      */
-    public function clearKey() {
+    public function clearKey()
+    {
         $this->_clear();
         return $this;
     }
@@ -334,9 +376,10 @@ class pdoModel
      * 启动事务
      * @return void
      */
-    public function startTrans() {
+    public function startTrans()
+    {
         //数据rollback 支持
-        if ($this->_trans==0) self::$_dbh->beginTransaction();
+        if ($this->_trans == 0) self::$_dbh->beginTransaction();
         $this->_trans++;
         return;
     }
@@ -345,9 +388,10 @@ class pdoModel
      * 用于非自动提交状态下面的查询提交
      * @return boolen
      */
-    public function commit() {
+    public function commit()
+    {
         $result = true;
-        if ($this->_trans>0) {
+        if ($this->_trans > 0) {
             $result = self::$_dbh->commit();
             $this->_trans = 0;
         }
@@ -358,9 +402,10 @@ class pdoModel
      * 事务回滚
      * @return boolen
      */
-    public function rollback() {
+    public function rollback()
+    {
         $result = true;
-        if ($this->_trans>0) {
+        if ($this->_trans > 0) {
             $result = self::$_dbh->rollback();
             $this->_trans = 0;
         }
@@ -371,7 +416,8 @@ class pdoModel
      * 关闭连接
      * PHP 在脚本结束时会自动关闭连接。
      */
-    public function close() {
+    public function close()
+    {
         if (!is_null(self::$_dbh)) self::$_dbh = null;
     }
 }
