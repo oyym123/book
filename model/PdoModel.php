@@ -7,7 +7,7 @@
  * Date: 2018/1/18
  * Time: 23:00
  */
-class pdoModel
+class PdoModel
 {
     protected static $_dbh = null; //静态属性,所有数据库实例共用,避免重复连接数据库
     protected $_dbType = 'mysql';

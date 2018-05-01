@@ -9,7 +9,7 @@ $c_str = $_GET['c'];
 // the full name of controller
 $c_name = $c_str . 'Controller';
 // the path of controller
-$c_path = './controller/' . $c_name . '.php';
+$c_path = './controller/' . ucfirst($c_name) . '.php';
 // get runtime action
 $method = $_GET['a'];
 // get runtime parameter
@@ -28,11 +28,11 @@ function userAutoload($class_name)
     //控制器类，截取后是个字符，匹配Controller
     if (substr($class_name, -10) == 'Controller') {
         // 控制器类， 当前平台下controller目录
-        require './controller/' . $class_name . '.php';
+        require './controller/' . ucfirst($class_name) . '.php';
     } //模型类，截取后5个字符，匹配Model
     elseif (substr($class_name, -5) == 'Model') {
         // 模型类，当前平台下model目录
-        require './model/' . $class_name . '.php';
+        require './model/' . ucfirst($class_name) . '.php';
     }
 }
 

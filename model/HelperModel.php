@@ -5,7 +5,7 @@
  * Date: 2018/1/18
  * Time: 18:30
  */
-class helperModel
+class HelperModel
 {
     /** 判断是否是手机 */
     public static function isMobile($mobile)
