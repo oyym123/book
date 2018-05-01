@@ -75,17 +75,28 @@ class ArticleController
         \FuncController::render('site-search', ['param' => json_encode($article)]);
     }
 
+    /** 等待界面 */
+    public function loading()
+    {
+        $param = [
+            'url' => isset($_GET['url']) ? $_GET['url'] : '',
+            'title' => isset($_GET['title']) ? $_GET['title'] : '',
+            'author' => isset($_GET['author']) ? str_replace(' ', '', $_GET['author']) : ''
+        ];
+        \FuncController::render('loading', ['param' => json_encode($param)]);
+    }
 
     /** 获取所有的章节 */
     public function get()
     {
-        // 获取链接的HTML代码
-        set_time_limit(0);
-        ignore_user_abort(true);
-        header("Location: index.php?c=home&a=index");
         $url = isset($_GET['url']) ? $_GET['url'] : '';
         $title = isset($_GET['title']) ? $_GET['title'] : '';
         $author = isset($_GET['author']) ? str_replace(' ', '', $_GET['author']) : '';
+
+        // 获取链接的HTML代码
+        set_time_limit(0);
+        ignore_user_abort(true);
+
         $html = file_get_contents($url);
         $pdo = new \MysqlModel;
         $mysql = $pdo->database();

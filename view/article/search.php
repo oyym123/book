@@ -55,7 +55,7 @@ require('../public/header.php');
                     $author = strip_tags($value['author']);
                     ?>
                     <li>
-                        <a href="<?= '/index.php?c=article&a=get&url=' . $value['url'] . '&title=' . $value['name'] . '&author=' . $author ?>"><?= $value['name'] ?>
+                        <a href="<?= '/index.php?c=article&a=loading&url=' . $value['url'] . '&title=' . $value['name'] . '&author=' . $author ?>"><?= $value['name'] ?>
                             &nbsp;&nbsp;&nbsp;/&nbsp;<?= $author ?></a>
                     </li>
                     <?php
