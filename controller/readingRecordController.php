@@ -7,7 +7,7 @@ namespace App\controller;
  * Time: 10:40
  */
 
-class readingRecordController
+class ReadingRecordController
 {
     /** 上次浏览 */
     public function lastViewed()

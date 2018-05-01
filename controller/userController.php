@@ -8,7 +8,7 @@ namespace App\controller;
  * Time: 17:34
  */
 
-class userController
+class UserController
 {
     /** 注册页 */
     public function register()
