@@ -9,7 +9,7 @@ $c_str = $_GET['c'];
 // the full name of controller
 $c_name = $c_str . 'Controller';
 // the path of controller
-$c_path = './controller/' . ucfirst($c_name) . '.php';
+$c_path = './controller/' . $c_name . '.php';
 // get runtime action
 $method = $_GET['a'];
 // get runtime parameter

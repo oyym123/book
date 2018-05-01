@@ -4,7 +4,7 @@
     <div class="weui-msg__icon-area"><i class="weui-icon-success weui-icon_msg"></i></div>
     <div class="weui-msg__text-area">
         <h2 class="weui-msg__title">注册成功</h2>
-        <p class="weui-msg__desc">您已成功注册成为XXX会员</p>
+        <p class="weui-msg__desc">您已成功注册成为菲菲读书会员</p>
     </div>
     <div class="weui-msg__opr-area">
         <p class="weui-btn-area">
@@ -15,9 +15,9 @@
     <div class="weui-msg__extra-area">
         <div class="weui-footer">
             <p class="weui-footer__links">
-                <a href="javascript:void(0);" class="weui-footer__link">XXX集团</a>
+                <a href="javascript:void(0);" class="weui-footer__link">菲菲读书</a>
             </p>
-            <p class="weui-footer__text">Copyright &copy; 2008-2017 www.XXX.cc</p>
+            <p class="weui-footer__text">Copyright &copy; 2018 book.ouyym.com</p>
         </div>
     </div>
 </div>
