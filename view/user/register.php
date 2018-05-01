@@ -206,7 +206,7 @@
                 data: {
                     phone_number: $("#mobile2").val(), password: $("#password2").val()
                 },
-                dataType: "json",
+                dataType: "Json",
                 async: false,
                 success: function (data) {
                     if (data.status != 1) {
