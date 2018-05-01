@@ -21,8 +21,15 @@ class readingRecordController
         } else {
             $recode = $mysql->where(['user_id' => "{$userId}"])->order(['created_at' => 'desc'])->one('reading_record');
         }
-        $limit = round($recode['chapter_id'] / 5);
-        $chapter = $mysql->where(['article_id' => $recode['article_id']])->order('chapter_id')->limit($limit + 1, 5)->select('chapter');
+
+        if (!empty($recode)) {
+            $limit = round($recode['chapter_id'] / 5);
+            $chapter = $mysql->where(['article_id' => $recode['article_id']])->order('chapter_id')->limit($limit + 1, 5)->select('chapter');
+        } else {
+            $limit = 0;
+            $chapter = [];
+            $recode['title'] = '';
+        }
         \FuncController::render('article/index', ['limit' => $limit, 'chapter' => json_encode($chapter), 'title' => $recode['title']]);
     }
 

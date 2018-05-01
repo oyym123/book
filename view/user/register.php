@@ -206,10 +206,10 @@
                 data: {
                     phone_number: $("#mobile2").val(), password: $("#password2").val()
                 },
-                dataType: "Json",
+                dataType: "text",
                 async: false,
                 success: function (data) {
-                    if (data.status != 1) {
+                    if (data != 1) {
                         dialog(data)
                     } else {
                         window.location.href = '/index.php?c=home&a=index';

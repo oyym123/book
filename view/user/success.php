@@ -8,7 +8,7 @@
     </div>
     <div class="weui-msg__opr-area">
         <p class="weui-btn-area">
-            <a href="../../index.php?c=user&a=register"
+            <a href="/index.php"
                class="weui-btn weui-btn_primary">返回登入页</a>
         </p>
     </div>

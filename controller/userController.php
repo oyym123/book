@@ -23,6 +23,16 @@ class userController
             if (!$userModel->create($_POST)) {
                 echo '注册失败，请重新注册！';
             }
+            session_start();
+            // 保存一天
+            $lifeTime = 24 * 3600;
+            setcookie(session_name(), session_id(), time() + $lifeTime, "/");
+            $_SESSION['phone_number'] = $_POST['phone_number'];
+            $sessionId = session_id();
+            $_SESSION['token'] = $sessionId;
+            $pdo = new \MysqlModel;
+            $mysql = $pdo->database();
+            $mysql->where(['phone_number' => $_POST['phone_number']])->update('user', ['token' => $_SESSION['token']]);
             echo 1;
         } else {
             echo $userModel->rule('register');
@@ -48,7 +58,7 @@ class userController
             $pdo = new \MysqlModel;
             $mysql = $pdo->database();
             $mysql->where(['phone_number' => $_POST['phone_number']])->update('user', ['token' => $_SESSION['token']]);
-            echo json_encode(['status' => 1, 'token' => $_SESSION['token']]);
+            echo 1;
         } else {
             echo $userModel->rule('login');
         }
