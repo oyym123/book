@@ -57,7 +57,7 @@ class ArticleController
             $param[] = [
                 'name' => $item,
                 'url' => $name[1][$key],
-                'author' => $author[0][$key]
+                'author' => $author[1][$key]
             ];
         }
         \FuncController::render('search', ['param' => json_encode($param)]);

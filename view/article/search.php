@@ -52,11 +52,10 @@ require('../public/header.php');
             <?php
             if ($data) {
                 foreach ($data as $value) {
-                    $author = strip_tags($value['author']);
                     ?>
                     <li>
-                        <a href="<?= '/index.php?c=article&a=loading&url=' . $value['url'] . '&title=' . $value['name'] . '&author=' . $author ?>"><?= $value['name'] ?>
-                            &nbsp;&nbsp;&nbsp;/&nbsp;<?= $author ?></a>
+                        <a href="<?= '/index.php?c=article&a=loading&url=' . $value['url'] . '&title=' . $value['name'] . '&author=' . $value['author'] ?>"><?= $value['name'] ?>
+                            &nbsp;&nbsp;&nbsp;/&nbsp;<?= $value['author']?></a>
                     </li>
                     <?php
                 }
